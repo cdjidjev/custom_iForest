@@ -127,15 +127,67 @@ def compute_lcas(tree, leaves_sublists):
     
     return lcas
 
-should_print = False
+def average_path_length_per_tree(n_samples_leaf):
+    """
+    Compute the average path length in a n_samples iTree, which is equal to
+    the average path length of an unsuccessful BST search since the
+    latter has the same structure as an isolation tree.
 
-__all__ = ["CustomIsolationForest"]
+    Parameters
+    ----------
+    n_samples_leaf : int
+        The number of training samples in the leaf.
 
-'''def get_chunk_n_rows(X, chunk_size):
-    """Determine the number of rows in each chunk given the total number of rows in X and the desired chunk size."""
-    n_samples = X.shape[0]
-    n_chunks = n_samples // chunk_size
-    return n_chunks if n_samples % chunk_size == 0 else n_chunks + 1'''
+    Returns
+    -------
+    average_path_length : float
+        The average path length for the given number of samples.
+    """
+    printx('n_smaples_leaf', n_samples_leaf)
+    if len(n_samples_leaf) <= 1:
+        return 0.0
+    elif n_samples_leaf == 2:
+        return 1.0
+    else:
+        return (
+            2.0 * (np.log(n_samples_leaf - 1.0) + np.euler_gamma)
+            - 2.0 * (n_samples_leaf - 1.0) / n_samples_leaf
+        )
+
+def _average_path_length(n_samples_leaf):
+    """
+    The average path length in a n_samples iTree, which is equal to
+    the average path length of an unsuccessful BST search since the
+    latter has the same structure as an isolation tree.
+    Parameters
+    ----------
+    n_samples_leaf : array-like of shape (n_samples,)
+        The number of training samples in each test sample leaf, for
+        each estimators.
+
+    Returns
+    -------
+    average_path_length : ndarray of shape (n_samples,)
+    """
+
+    n_samples_leaf = check_array(n_samples_leaf, ensure_2d=False)
+
+    n_samples_leaf_shape = n_samples_leaf.shape
+    n_samples_leaf = n_samples_leaf.reshape((1, -1))
+    average_path_length = np.zeros(n_samples_leaf.shape)
+
+    mask_1 = n_samples_leaf <= 1
+    mask_2 = n_samples_leaf == 2
+    not_mask = ~np.logical_or(mask_1, mask_2)
+
+    average_path_length[mask_1] = 0.0
+    average_path_length[mask_2] = 1.0
+    average_path_length[not_mask] = (
+        2.0 * (np.log(n_samples_leaf[not_mask] - 1.0) + np.euler_gamma)
+        - 2.0 * (n_samples_leaf[not_mask] - 1.0) / n_samples_leaf[not_mask]
+    )
+
+    return average_path_length.reshape(n_samples_leaf_shape)
 
 def map_leaves_to_datapoints(leaves_index):
     """
@@ -247,9 +299,7 @@ def _parallel_compute_tree_depths(
 
     ipv4_distances_to_root = [distance_from_root(tree.tree_, n) for n in lcas]
     printx('ipv4_distances_to_root',ipv4_distances_to_root)
-    #plt.figure(figsize=(20, 10))  # Adjust the figure size as needed
-    #plot_tree(tree, filled=True, feature_names=None, rounded=True)
-    #plt.show()
+
     
     with lock:
         #num_samples_per_leaf.append([len(l) for l in leaves_sublists])
@@ -272,6 +322,11 @@ def _parallel_compute_tree_depths(
             + tree_avg_path_lengths[leaves_index]
             - 1.0
         )
+
+should_print = False
+should_draw = False
+
+__all__ = ["CustomIsolationForest"]
 
 class CustomIsolationForest(OutlierMixin, BaseBagging):
     """
@@ -479,6 +534,7 @@ class CustomIsolationForest(OutlierMixin, BaseBagging):
         verbose=0,
         warm_start=False,
         ipv4_index=None,
+        min_score=False,
         df=None
     ):
         super().__init__(
@@ -551,7 +607,7 @@ class CustomIsolationForest(OutlierMixin, BaseBagging):
             # Pre-sort indices to avoid that each individual tree of the
             # ensemble sorts the indices.
             X.sort_indices()
-
+        printx('X: ', X)
         rnd = check_random_state(self.random_state)
         y = rnd.uniform(size=X.shape[0])
 
@@ -586,6 +642,12 @@ class CustomIsolationForest(OutlierMixin, BaseBagging):
             check_input=False,
         )
 
+        if should_draw:
+            for tree in self.estimators_:
+                plt.figure(figsize=(20, 10))  # Adjust the figure size as needed
+                plot_tree(tree, filled=True, feature_names=None, rounded=True)
+                plt.show()
+
         self._average_path_length_per_tree, self._decision_path_lengths = zip(
             *[
                 (
@@ -612,58 +674,7 @@ class CustomIsolationForest(OutlierMixin, BaseBagging):
 
         return self
 
-    def predict_old(self, X):
-        """
-        Predict if a particular sample is an outlier or not.
-
-        Parameters
-        ----------
-        X : {array-like, sparse matrix} of shape (n_samples, n_features)
-            The input samples. Internally, it will be converted to
-            ``dtype=np.float32`` and if a sparse matrix is provided
-            to a sparse ``csr_matrix``.
-
-        Returns
-        -------
-        is_inlier : ndarray of shape (n_samples,)
-            For each observation, tells whether or not (+1 or -1) it should
-            be considered as an inlier according to the fitted model.
-
-        Notes
-        -----
-        The predict method can be parallelized by setting a joblib context. This
-        inherently does NOT use the ``n_jobs`` parameter initialized in the class,
-        which is used during ``fit``. This is because, predict may actually be faster
-        without parallelization for a small number of samples,
-        such as for 1000 samples or less. The user can set the
-        number of jobs in the joblib context to control the number of parallel jobs.
-
-        .. code-block:: python
-
-            from joblib import parallel_backend
-
-            # Note, we use threading here as the predict method is not CPU bound.
-            with parallel_backend("threading", n_jobs=4):
-                model.predict(X)
-        """
-        check_is_fitted(self)
-        decision_func = self.decision_function(X)
-        '''
-        ORIGINAL CODE
-        is_inlier = np.ones_like(decision_func, dtype=int)
-        is_inlier[decision_func < 0] = -1'''
-        # Initialize an array to hold the inlier/outlier predictions
-        is_inlier = np.ones(len(X), dtype=int)
-        
-        # Iterate over each sample's decision function output
-        for i, score_dict in enumerate(decision_func):
-            for sample_id, score in score_dict.items():
-                if score < 0:
-                    is_inlier[i] = -1
-                    break  # If one tree marks it as an outlier, break early
-        return is_inlier
-
-    def predict(self, X):
+    def predict(self, X, min_score=False):
         """
         Predict if a particular sample is an outlier or not.
 
@@ -679,7 +690,7 @@ class CustomIsolationForest(OutlierMixin, BaseBagging):
             be considered as an inlier according to the fitted model.
             The keys are the sample identifiers and the values are +1 or -1.
         """
-
+        self.min_score = min_score
         check_is_fitted(self)
         decision_func = self.decision_function(X)
 
@@ -695,86 +706,7 @@ class CustomIsolationForest(OutlierMixin, BaseBagging):
         
         return is_inlier
 
-    def decision_function_old(self, X):
-        """
-        Average anomaly score of X of the base classifiers.
-
-        The anomaly score of an input sample is computed as
-        the mean anomaly score of the trees in the forest.
-
-        The measure of normality of an observation given a tree is the depth
-        of the leaf containing this observation, which is equivalent to
-        the number of splittings required to isolate this point. In case of
-        several observations n_left in the leaf, the average path length of
-        a n_left samples isolation tree is added.
-
-        Parameters
-        ----------
-        X : {array-like, sparse matrix} of shape (n_samples, n_features)
-            The input samples. Internally, it will be converted to
-            ``dtype=np.float32`` and if a sparse matrix is provided
-            to a sparse ``csr_matrix``.
-
-        Returns
-        -------
-        scores : ndarray of shape (n_samples,)
-            The anomaly score of the input samples.
-            The lower, the more abnormal. Negative scores represent outliers,
-            positive scores represent inliers.
-
-        Notes
-        -----
-        The decision_function method can be parallelized by setting a joblib context.
-        This inherently does NOT use the ``n_jobs`` parameter initialized in the class,
-        which is used during ``fit``. This is because, calculating the score may
-        actually be faster without parallelization for a small number of samples,
-        such as for 1000 samples or less.
-        The user can set the number of jobs in the joblib context to control the
-        number of parallel jobs.
-
-        .. code-block:: python
-
-            from joblib import parallel_backend
-
-            # Note, we use threading here as the decision_function method is
-            # not CPU bound.
-            with parallel_backend("threading", n_jobs=4):
-                model.decision_function(X)
-        """
-        # We subtract self.offset_ to make 0 be the threshold value for being
-        # an outlier:
-        #ORIGINAL CODE + SOME DEBUGGING PRINTS
-        '''printx('decision_function function')
-        printx('self.offset_ ***********************************', self.offset_)
-        printx('self.score_samples(X) ***********************************', self.score_samples(X))
-
-        return self.score_samples(X) - self.offset_'''
-        # Compute the raw scores
-        raw_scores = self.score_samples(X)
-        printx('raw_scores',raw_scores)
-        
-        # Extract all scores into a list
-        all_scores = []
-        for score_dict in raw_scores:
-            printx('score_dict',score_dict)
-            all_scores.extend(score_dict.values())
-        
-        printx("all_scores", all_scores)
-
-        # Calculate the offset (e.g., using the median)
-        self.offset_ = np.median(all_scores)
-        printx("self.offset_", self.offset_)
-        
-        # Adjust each sample's score by subtracting the offset
-        adjusted_scores = []
-        for score_dict in raw_scores:
-            adjusted_dict = {sample_id: score - self.offset_ for sample_id, score in score_dict.items()}
-            adjusted_scores.append(adjusted_dict)
-        
-        printx('adjusted_scores', adjusted_scores)
-        return adjusted_scores
-
-    def decision_function(self, X):
+    def decision_function(self, X, most_anom_score=False):
         """
         Average anomaly score of X of the base classifiers.
 
@@ -792,23 +724,26 @@ class CustomIsolationForest(OutlierMixin, BaseBagging):
             The adjusted anomaly scores of the input samples.
         """
 
-        # Compute the raw scores
+        # Step 1: Compute the raw scores
         raw_scores = self.score_samples(X)
-        printx('raw_scores', raw_scores)
+        printx("raw_scores", raw_scores)
         
-        # Extract all scores into a list for calculating the offset
-        all_scores = list(raw_scores.values())
+        if most_anom_score:
+            # Return the lowest (most anomalous) score for each sample
+            adjusted_scores = {sample_id: min(score) for sample_id, score in raw_scores.items()}
+        else:
+            # Extract all scores into a list for calculating the offset
+            all_scores = list(raw_scores.values())
+            printx("all_scores", all_scores)
+            
+            # Step 2: Calculate the offset (e.g., using the median)
+            self.offset_ = np.median(all_scores)
+            printx("self.offset_", self.offset_)
+            
+            # Step 3: Adjust each sample's score by subtracting the offset
+            adjusted_scores = {sample_id: float(score - self.offset_) for sample_id, score in raw_scores.items()}
         
-        printx("all_scores", all_scores)
-
-        # Calculate the offset (e.g., using the median)
-        self.offset_ = np.median(all_scores)
-        printx("self.offset_", self.offset_)
-        
-        # Adjust each sample's score by subtracting the offset
-        adjusted_scores = {sample_id: float(score - self.offset_) for sample_id, score in raw_scores.items()}
-        
-        printx('adjusted_scores', adjusted_scores)
+        printx("adjusted_scores", adjusted_scores)
         return adjusted_scores
     
     def score_samples(self, X):
@@ -890,9 +825,111 @@ class CustomIsolationForest(OutlierMixin, BaseBagging):
     def _compute_chunked_score_samples(self, X):
         # todo: to implement chunks, we need to maintain information on how many samples each ip leaf represents
 
-        return self._compute_score_samples(X, False)
+        return self._compute_score_samples(X, False, min_score=self.min_score)
 
-    def _compute_score_samples(self, X, subsample_features):
+    def _compute_score_samples(self, X, subsample_features, min_score=False):
+        """
+        Compute the score of each samples in X going through the extra trees.
+
+        Parameters
+        ----------
+        X : array-like or sparse matrix
+            Data matrix.
+
+        subsample_features : bool
+            Whether features should be subsampled.
+
+        min_score : bool, optional, default=False
+            If True, return the minimum score of the unique IPs leaves.
+            If False, return the average score.
+
+        Returns
+        -------
+        scores : defaultdict of shape (n_samples,)
+            The score of each sample in X.
+        """
+        min_score = self.min_score
+        n_samples = X.shape[0]
+        printx('n_samples', n_samples)
+
+
+        depths = np.zeros(n_samples, order="f")
+
+        average_path_length_max_samples = _average_path_length([self._max_samples])
+
+        ipv4_depths = np.empty((n_samples,), dtype=object, order="f")
+        for i in range(n_samples):
+            ipv4_depths = []
+
+        n_jobs, _, _ = _partition_estimators(self.n_estimators, None)
+        lock = threading.Lock()
+        Parallel(
+            n_jobs=n_jobs,
+            verbose=self.verbose,
+            require="sharedmem",
+        )(
+            delayed(_parallel_compute_tree_depths)(
+                tree,
+                X,
+                features if subsample_features else None,
+                self._decision_path_lengths[tree_idx],
+                self._average_path_length_per_tree[tree_idx],
+                depths,
+                ipv4_depths,
+                lock,
+                self.df,
+            )
+            for tree_idx, (tree, features) in enumerate(
+                zip(self.estimators_, self.estimators_features_)
+            )
+        )
+
+        # Initialize dictionaries to accumulate total depths and counts
+        combined_depths = defaultdict(lambda: np.full(len(ipv4_depths), np.inf if min_score else 0))
+        counts = defaultdict(lambda: np.zeros(len(ipv4_depths)))
+
+        # Aggregate depths and counts for each sample ID for each tree
+        for tree_idx, tree_depths in enumerate(ipv4_depths):
+            for sample_id, depth in tree_depths:
+                if min_score:
+                    combined_depths[sample_id][tree_idx] = min(combined_depths[sample_id][tree_idx], depth)
+                else:
+                    combined_depths[sample_id][tree_idx] += depth
+                counts[sample_id][tree_idx] += 1
+
+        # Calculate scores
+        scores = defaultdict(float)
+        num_tree_leaves = {tree_idx: sum([counts[sample_id][tree_idx] for sample_id in combined_depths]) for tree_idx in range(len(ipv4_depths))}
+        printx('num_tree_leaves', num_tree_leaves)
+        for sample_id in combined_depths:
+            sample_scores = []
+            for tree_idx in range(len(ipv4_depths)):
+                if counts[sample_id][tree_idx] > 0:
+                    if min_score:
+                        depth = combined_depths[sample_id][tree_idx]
+                    else:
+                        depth = combined_depths[sample_id][tree_idx] / counts[sample_id][tree_idx]
+                else:
+                    depth = 0
+
+                denominator = _average_path_length([num_tree_leaves[tree_idx]])
+
+                if denominator != 0:
+                    sample_score = 2 ** (-depth / denominator)
+                    sample_scores.append(sample_score)
+
+            # Average or take the minimum of the scores from all trees
+            if sample_scores:
+                if min_score:
+                    scores[sample_id] = np.min(sample_scores)
+                else:
+                    scores[sample_id] = np.mean(sample_scores)
+
+        printx("_compute_score_samples Scores:", scores)
+
+        return scores
+
+    def _compute_score_samples_old(self, X, subsample_features):
         """
         Compute the score of each samples in X going through the extra trees.
 
@@ -1023,65 +1060,3 @@ class CustomIsolationForest(OutlierMixin, BaseBagging):
             },
             "allow_nan": True,
         }
-
-def average_path_length_per_tree(n_samples_leaf):
-    """
-    Compute the average path length in a n_samples iTree, which is equal to
-    the average path length of an unsuccessful BST search since the
-    latter has the same structure as an isolation tree.
-
-    Parameters
-    ----------
-    n_samples_leaf : int
-        The number of training samples in the leaf.
-
-    Returns
-    -------
-    average_path_length : float
-        The average path length for the given number of samples.
-    """
-    printx('n_smaples_leaf', n_samples_leaf)
-    if len(n_samples_leaf) <= 1:
-        return 0.0
-    elif n_samples_leaf == 2:
-        return 1.0
-    else:
-        return (
-            2.0 * (np.log(n_samples_leaf - 1.0) + np.euler_gamma)
-            - 2.0 * (n_samples_leaf - 1.0) / n_samples_leaf
-        )
-
-def _average_path_length(n_samples_leaf):
-    """
-    The average path length in a n_samples iTree, which is equal to
-    the average path length of an unsuccessful BST search since the
-    latter has the same structure as an isolation tree.
-    Parameters
-    ----------
-    n_samples_leaf : array-like of shape (n_samples,)
-        The number of training samples in each test sample leaf, for
-        each estimators.
-
-    Returns
-    -------
-    average_path_length : ndarray of shape (n_samples,)
-    """
-
-    n_samples_leaf = check_array(n_samples_leaf, ensure_2d=False)
-
-    n_samples_leaf_shape = n_samples_leaf.shape
-    n_samples_leaf = n_samples_leaf.reshape((1, -1))
-    average_path_length = np.zeros(n_samples_leaf.shape)
-
-    mask_1 = n_samples_leaf <= 1
-    mask_2 = n_samples_leaf == 2
-    not_mask = ~np.logical_or(mask_1, mask_2)
-
-    average_path_length[mask_1] = 0.0
-    average_path_length[mask_2] = 1.0
-    average_path_length[not_mask] = (
-        2.0 * (np.log(n_samples_leaf[not_mask] - 1.0) + np.euler_gamma)
-        - 2.0 * (n_samples_leaf[not_mask] - 1.0) / n_samples_leaf[not_mask]
-    )
-
-    return average_path_length.reshape(n_samples_leaf_shape)
