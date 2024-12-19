@@ -1,0 +1,483 @@
+Hosts
+Results: 3,700,588 Time: 1.28s
+ 210.178.105.44
+Akamai  KIXS-AS-KR Korea Telecom (4766)  Seoul, South Korea
+email
+7000/UNKNOWN
+8000/HTTP
+10443/SMTP
+10796/HTTP
+10821/SMTP
+11150/HTTP
+11226/HTTP
+11523/SMTP
+12161/HTTP
+12215/SMTP
+12236/HTTP
+12264/HTTP
+12356/HTTP
+13899/HTTP
+14737/IMAP
+15638/HTTP
+15650/HTTP
+15711/SMTP
+15969/POP3
+17080/SMTP
+17111/POP3
+17277/HTTP
+20031/HTTP
+20202/HTTP
+20704/HTTP
+As well as 60 more
+ 202.164.226.198 (caavex198.secure.ne.jp)
+ CPI-NET KDDI Web Communications Inc. (9597)  Tokyo, Japan
+file-sharing email
+21/FTP
+25/SMTP
+80/HTTP
+110/POP3
+143/IMAP
+443/HTTP
+465/SMTP
+587/SMTP
+995/POP3
+8080/HTTP
+ 172.81.116.172 (vps31079.inmotionhosting.com)
+Linux  IMH-IAD (54641)  Virginia, United States
+database remote-access email file-sharing web.control-panel.hosting login-page
+21/FTP
+25/SMTP
+80/HTTP
+110/POP3
+143/IMAP
+443/HTTP
+465/SMTP
+587/SMTP
+993/IMAP
+995/POP3
+2082/HTTP
+2083/HTTP
+2095/HTTP
+2096/HTTP
+2222/SSH
+3306/MYSQL
+ 144.76.99.219 (mail.leesker.de)
+Linux  HETZNER-AS (24940)  Saxony, Germany
+remote-access login-page gaming proxy email
+22/SSH
+25/SMTP
+80/HTTP
+110/POP3
+143/IMAP
+443/HTTP
+465/SMTP
+587/SMTP
+993/IMAP
+995/POP3
+2223/SSH
+2224/SSH
+5232/HTTP
+8080/HTTP
+22000/UNKNOWN
+27015/VALVE
+ 66.226.129.159 (host-66-226-129-159.in2net.com)
+Linux  IN2NET-NETWORK (26753)  British Columbia, Canada
+login-page email web.control-panel.hosting file-sharing
+21/FTP
+25/SMTP
+80/HTTP
+110/POP3
+143/IMAP
+443/HTTP
+465/SMTP
+587/SMTP
+993/IMAP
+995/POP3
+2083/HTTP
+2096/HTTP
+ 52.97.151.66
+Microsoft  MICROSOFT-CORP-MSN-AS-BLOCK (8075)  North Holland, Netherlands
+iot email
+25/SMTP
+80/HTTP
+110/POP3
+143/IMAP
+443/HTTP
+443/COAP
+587/SMTP
+993/IMAP
+995/POP3
+ 89.163.133.99 (rs002893.fastrootserver.de)
+Microsoft  MYLOC-AS IP Backbone of myLoc managed IT AG (24961)  North Rhine-Westphalia, Germany
+remote-access email prototype web.control-panel.hosting network-administration
+25/SMTP
+53/DNS
+80/HTTP
+110/POP3
+143/IMAP
+443/HTTP
+3389/RDP
+8443/HTTP
+8880/HTTP
+ 148.72.246.167 (167.246.72.148.host.secureserver.net)
+Linux  AS-26496-GO-DADDY-COM-LLC (26496)  Singapore
+email database file-sharing web.control-panel.hosting login-page remote-access
+21/FTP
+22/SSH
+25/SMTP
+53/DNS
+80/HTTP
+110/POP3
+111/PORTMAP
+111/PORTMAP
+143/IMAP
+443/HTTP
+465/SMTP
+587/SMTP
+993/IMAP
+995/POP3
+2077/HTTP
+2078/HTTP
+2082/HTTP
+2083/HTTP
+2086/HTTP
+2087/HTTP
+2091/HTTP
+2095/HTTP
+2096/HTTP
+3306/MYSQL
+ 208.117.2.205 (ip205.208-117-2.static.steadfastdns.net)
+Linux  STEADFAST (32748)  Illinois, United States
+email
+25/SMTP
+80/HTTP
+110/POP3
+143/IMAP
+443/HTTP
+993/IMAP
+995/POP3
+ 99.192.162.219
+Linux  MOJOHOST (27589)  Florida, United States
+login-page file-sharing jquery email
+21/FTP
+25/SMTP
+53/DNS
+80/HTTP
+110/POP3
+143/IMAP
+443/HTTP
+465/SMTP
+587/SMTP
+993/IMAP
+995/POP3
+2197/HTTP
+2199/HTTP
+2222/HTTP
+8001/HTTP
+8002/UNKNOWN
+8004/HTTP
+8005/UNKNOWN
+8007/HTTP
+8008/UNKNOWN
+8010/HTTP
+8011/UNKNOWN
+8013/HTTP
+8014/UNKNOWN
+8016/HTTP
+As well as 9 more
+ 36.66.195.101 (mail.kpi.go.id)
+Linux  TELKOMNET-AS-AP PT Telekomunikasi Indonesia (7713)  Jakarta, Indonesia
+network-administration email remote-access login-page yui
+22/SSH
+25/SMTP
+53/DNS
+80/HTTP
+110/POP3
+143/IMAP
+389/LDAP
+443/HTTP
+465/SMTP
+587/SMTP
+993/IMAP
+995/POP3
+5222/XMPP
+5269/UNKNOWN
+7025/SMTP
+7071/HTTP
+7072/HTTP
+7073/HTTP
+7110/POP3
+7143/IMAP
+7780/HTTP
+7993/IMAP
+7995/POP3
+8080/HTTP
+8443/HTTP
+ 193.111.102.68 (test-solution-1.webercloud-china.com)
+ WEBERCLOUD (35710)  Baden-Wurttemberg, Germany
+prototype requirejs remote-access file-sharing web.control-panel.hosting network.device.web-ui email
+21/FTP
+25/SMTP
+80/HTTP
+110/POP3
+143/IMAP
+443/HTTP
+465/SMTP
+587/SMTP
+993/IMAP
+995/POP3
+8443/HTTP
+10022/SSH
+ 78.142.59.27 (mail.nailcocktailboutique.com)
+Ubuntu Linux  TELEPOINT (31083)  Sofia-Capital, Bulgaria
+file-sharing email bootstrap jquery modernizr select2 login-page default-landing-page remote-access
+21/FTP
+22/SSH
+25/SMTP
+53/DNS
+80/HTTP
+110/POP3
+123/NTP
+143/IMAP
+443/HTTP
+465/SMTP
+587/SMTP
+993/IMAP
+995/POP3
+8080/HTTP
+8081/HTTP
+ 98.24.154.100 (syn-098-024-154-100.res.spectrum.com)
+Ubuntu Linux  TWC-11426-CAROLINAS (11426)  North Carolina, United States
+embedplus jquery jquery-migrate wordpress yoast-seo email media-streaming
+25/SMTP
+80/HTTP
+110/POP3
+143/IMAP
+443/HTTP
+465/SMTP
+587/SMTP
+993/IMAP
+995/POP3
+32400/HTTP
+ 103.52.147.58 (uranus.webmail.co.id)
+Linux  IDNIC-DRUPADI-AS-ID PT. Drupadi Prima (59147)  Jakarta, Indonesia
+web.control-panel.hosting email login-page
+25/SMTP
+53/DNS
+110/POP3
+143/IMAP
+465/SMTP
+587/SMTP
+993/IMAP
+995/POP3
+2077/HTTP
+2078/HTTP
+2079/HTTP
+2080/HTTP
+2082/HTTP
+2083/HTTP
+2086/HTTP
+2087/HTTP
+2095/HTTP
+2096/HTTP
+ 162.144.61.137 (server.unos.com)
+Linux  UNIFIEDLAYER-AS-1 (46606)  Utah, United States
+email file-sharing login-page database remote-access web.control-panel.hosting
+21/FTP
+22/SSH
+25/SMTP
+26/SMTP
+53/DNS
+80/HTTP
+110/POP3
+123/NTP
+143/IMAP
+443/HTTP
+465/SMTP
+587/SMTP
+993/IMAP
+995/POP3
+2077/HTTP
+2078/HTTP
+2079/HTTP
+2080/HTTP
+2082/HTTP
+2083/HTTP
+2086/HTTP
+2087/HTTP
+2091/HTTP
+2095/HTTP
+2096/HTTP
+As well as 1 more
+ 202.43.169.182 (plesk01.rumahku.com)
+Linux  DTPNET-AS-AP DTPNET NAP (18059)  West Java, Indonesia
+remote-access email file-sharing prototype requirejs web.control-panel.hosting
+21/FTP
+22/SSH
+25/SMTP
+53/DNS
+80/HTTP
+110/POP3
+143/IMAP
+443/HTTP
+465/SMTP
+587/SMTP
+993/IMAP
+995/POP3
+4190/PIGEONHOLE
+7080/HTTP
+7081/HTTP
+8443/HTTP
+8880/HTTP
+ 80.82.223.114 (www.jupiter11.de)
+Linux  MYLOC-AS IP Backbone of myLoc managed IT AG (24961)  North Rhine-Westphalia, Germany
+file-sharing login-page database email
+21/FTP
+25/SMTP
+53/DNS
+80/HTTP
+110/POP3
+111/PORTMAP
+111/PORTMAP
+112/POP3
+143/IMAP
+144/IMAP
+443/HTTP
+465/SMTP
+587/SMTP
+993/IMAP
+994/IMAP
+995/POP3
+996/POP3
+3307/MYSQL
+3308/MYSQL
+ 103.94.159.90 (slbsl.com.np)
+Microsoft Windows  CHPL-AS-AP Cloud Himalaya Pvt Ltd (135337)  Bagmati Province, Nepal
+email remote-access network.device.web-ui file-sharing network-administration prototype requirejs
+21/FTP
+25/SMTP
+53/DNS
+80/HTTP
+110/POP3
+143/IMAP
+443/HTTP
+465/SMTP
+993/IMAP
+995/POP3
+8127/RDP
+8443/HTTP
+8880/HTTP
+ 144.76.146.233 (k53d55.meinserver.io)
+Linux  HETZNER-AS (24940)  Saxony, Germany
+file-sharing bootstrap jquery modernizr remote-access login-page email database
+21/FTP
+22/SSH
+25/SMTP
+53/DNS
+80/HTTP
+110/POP3
+143/IMAP
+443/HTTP
+465/SMTP
+587/SMTP
+993/IMAP
+995/POP3
+3306/MYSQL
+5665/HTTP
+8080/HTTP
+8081/HTTP
+ 209.236.65.223 (utahtfa.org)
+Linux  UK2NET-AS (13213)  Utah, United States
+login-page database web.control-panel.hosting email remote-access file-sharing
+21/FTP
+25/SMTP
+80/HTTP
+110/POP3
+143/IMAP
+443/HTTP
+465/SMTP
+993/IMAP
+995/POP3
+2078/HTTP
+2083/HTTP
+2096/HTTP
+2233/SSH
+2525/SMTP
+3306/MYSQL
+ 205.209.103.115 (server.amcorp.mx)
+Linux  IS-AS-1 (19318)  New Jersey, United States
+login-page database remote-access open-dir file-sharing web.control-panel.hosting email
+21/FTP
+22/SSH
+25/SMTP
+53/DNS
+80/HTTP
+110/POP3
+143/IMAP
+443/HTTP
+465/SMTP
+587/SMTP
+993/IMAP
+995/POP3
+2077/HTTP
+2078/HTTP
+2079/HTTP
+2080/HTTP
+2082/HTTP
+2083/HTTP
+2086/HTTP
+2087/HTTP
+2095/HTTP
+2096/HTTP
+3306/MYSQL
+ 82.146.57.84 (hostkbackup.hayazg.net)
+Linux  RU-JSCIOT (29182)  Moscow Oblast, Russia
+file-sharing remote-access email
+21/FTP
+22/SSH
+25/SMTP
+53/DNS
+80/HTTP
+110/POP3
+143/IMAP
+443/HTTP
+465/SMTP
+587/SMTP
+993/IMAP
+995/POP3
+1500/HTTP
+ 82.98.175.180 (vl26653.dinaserver.com)
+Debian Linux 9.1  DINAHOSTING-AS (42612)  Madrid, Spain
+email database remote-access file-sharing
+21/FTP
+22/SSH
+25/SMTP
+80/HTTP
+110/POP3
+443/HTTP
+587/SMTP
+993/IMAP
+3306/MYSQL
+ 211.24.235.235
+ TTNET-MY TIME dotCom Berhad No. 14, Jalan Majistret U126 Hicom Glenmarie Industrial Park 40150 Shah Alam Selangor, Malaysia (9930)  Selangor, Malaysia
+truncated
+143/IMAP
+22/SSH
+445/SMB
+2404/IEC60870_5_104
+21/FTP
+110/POP3
+3299/SAP_ROUTER
+1883/MQTT
+1433/MSSQL
+27017/MONGODB
+23/UNKNOWN
+80/HTTP
+25/SMTP
+10001/ATG
+5432/POSTGRES
+11112/DICOM
+3306/MYSQL
+135/DCERPC
+161/SNMP
+5900/VNC

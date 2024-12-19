@@ -280,7 +280,8 @@ def _parallel_compute_tree_depths(
         s = leaves_mapping[j]
         leaves_list += s
         #printx('leaves_list:', leaves_list)
-        ipv4_list = [df.loc[l, 'ipv4'] for l in leaves_list]
+        #ipv4_list = [df.loc[l, 'ipv4'] for l in leaves_list]
+        ipv4_list = [df.loc[l, 'ip_id'] for l in leaves_list]
         printx('ipv4_list:', ipv4_list)
         ipv4_sublists = divide_into_sublists(ipv4_list)
         #printx('ipv4_sublists ',ipv4_sublists)
@@ -599,6 +600,8 @@ class CustomIsolationForest(OutlierMixin, BaseBagging):
             if not np.all(np.isfinite(X)):
                 raise ValueError("Input contains NaN or infinite values")
             return X
+        #print("################################################################")
+        #print(X)
         X = check_finite(X)
         X = self._validate_data(
             X, accept_sparse=["csc"], dtype=tree_dtype

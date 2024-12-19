@@ -32,7 +32,7 @@ def calculate_distributions(service_port_dict):
     
     return service_distribution, port_distributions
 
-def generate_scan_data_1(num_ips, num_scans_per_ip, norm_list_length_distribution, service_distribution, port_distributions, anom_list_length_distribution, anom_service_distribution, anom_port_distribution, anomaly_rate=0.1, seed=None):
+def generate_scan_data_1_old(num_ips, num_scans_per_ip, norm_list_length_distribution, service_distribution, port_distributions, anom_list_length_distribution, anom_service_distribution, anom_port_distribution, anomaly_rate=0.1, seed=None):
     
     np.random.seed(seed)
     random.seed(seed)
@@ -82,7 +82,7 @@ def generate_scan_data_1(num_ips, num_scans_per_ip, norm_list_length_distributio
     # Add 'ip_id' to columns to store the unique identifier per IP address
     return pd.DataFrame(data, columns=['ipv4', 'ip_id', 'scan_id', 'port', 'service', 'anomaly'])
 
-def generate_scan_data(num_ips, num_scans_per_ip, norm_list_length_distribution, common_service_distribution, common_port_distribution, anom_list_length_distribution, anomaly_service_distribution, anomaly_port_distribution, anomaly_rate=0.1, seed=None):
+def generate_scan_data_1(num_ips, num_scans_per_ip, norm_list_length_distribution, common_service_distribution, common_port_distribution, anom_list_length_distribution, anomaly_service_distribution, anomaly_port_distribution, anomaly_rate=0.1, seed=None):
     np.random.seed(seed)
     random.seed(seed)
 
@@ -92,10 +92,13 @@ def generate_scan_data(num_ips, num_scans_per_ip, norm_list_length_distribution,
     data = []
     global_scan_id = 0  # Initialize a global scan ID counter
 
+    num_anomolous_ips = max(1, int(num_ips * anomaly_rate))
+    anom_ip_id = random.sample(range(num_ips), num_anomolous_ips)
+
     for ip_id in range(num_ips):  # `ip_id` will serve as the unique identifier for each IP
         ipv4 = generate_ipv4()
         # Determine if this IP will exhibit anomalous behavior
-        is_anomalous_ip = np.random.rand() < anomaly_rate
+        is_anomalous_ip = (ip_id in anom_ip_id)
         
         # Define the distributions for normal and anomalous behaviors
         if is_anomalous_ip:
@@ -127,6 +130,99 @@ def generate_scan_data(num_ips, num_scans_per_ip, norm_list_length_distribution,
     # Return the data as a DataFrame
     return pd.DataFrame(data, columns=['ipv4', 'ip_id', 'scan_id', 'port', 'service', 'anomaly'])
 
+def generate_scan_data_2(num_ips, num_scans_per_ip, norm_list_length_distribution, common_service_distribution, common_port_distribution, anom_list_length_distribution, anomaly_service_distribution, anomaly_port_distribution, anomaly_rate=0.1, seed=None):
+    np.random.seed(seed)
+    random.seed(seed)
+
+    def generate_ipv4():
+        return ".".join(map(str, (random.randint(0, 255) for _ in range(4))))
+
+    # Create typical_service_ports from the common_port_distribution
+    typical_service_ports = {}
+    for service in common_port_distribution:
+        # Get the most common ports for each service from the distribution
+        ports = list(common_port_distribution[service].keys())
+        probabilities = list(common_port_distribution[service].values())
+        # Select ports with probability > threshold (e.g., 0.1) as typical
+        typical_ports = [port for port, prob in zip(ports, probabilities) if prob > 0.1]
+        if not typical_ports:  # If no ports meet threshold, take the top 2 most likely ports
+            typical_ports = [ports[i] for i in np.argsort(probabilities)[-2:]]
+        typical_service_ports[service] = typical_ports
+
+    data = []
+    global_scan_id = 0
+    num_anomolous_ips = max(1, int(num_ips * anomaly_rate))
+    anom_ip_id = random.sample(range(num_ips), num_anomolous_ips)
+
+    for ip_id in range(num_ips):
+        ipv4 = generate_ipv4()
+        is_anomalous_ip = (ip_id in anom_ip_id)
+        
+        # Establish normal behavior pattern for this IP
+        base_services = np.random.choice(
+            list(common_service_distribution.keys()),
+            size=np.random.randint(1, 4),
+            p=list(common_service_distribution.values()),
+            replace=False
+        )
+        
+        # For each scan from this IP
+        for _ in range(num_scans_per_ip):
+            # Determine if this particular scan will be anomalous
+            is_anomalous_scan = is_anomalous_ip and np.random.rand() < 0.2  # 20% of scans from anomalous IPs
+            
+            if is_anomalous_scan:
+                # Generate anomalous behavior by using atypical ports for services
+                list_length = np.random.choice(
+                    np.arange(1, len(anom_list_length_distribution) + 1),
+                    p=anom_list_length_distribution
+                )
+                
+                # Select services from base services to make anomalous
+                current_services = np.random.choice(base_services, size=min(list_length, len(base_services)), replace=False)
+                current_ports = []
+                
+                for service in current_services:
+                    # Get typical ports for this service
+                    typical_ports = typical_service_ports[service]
+                    # Get all possible ports from the port distribution
+                    all_ports = list(common_port_distribution[service].keys())
+                    # Generate an atypical port (one that's not in typical_ports)
+                    available_ports = [p for p in all_ports if p not in typical_ports]
+                    if not available_ports:  # If no atypical ports available, generate a random high port
+                        atypical_port = random.randint(10000, 65535)
+                    else:
+                        atypical_port = np.random.choice(available_ports)
+                    current_ports.append(atypical_port)
+                
+                anomaly = 1
+                
+            else:
+                # Generate normal behavior
+                list_length = np.random.choice(
+                    np.arange(1, len(norm_list_length_distribution) + 1),
+                    p=norm_list_length_distribution
+                )
+                
+                # Use subset of base services
+                current_services = np.random.choice(
+                    base_services,
+                    size=min(list_length, len(base_services)),
+                    replace=False
+                )
+                
+                # Use typical ports for these services
+                current_ports = []
+                for service in current_services:
+                    port = np.random.choice(typical_service_ports[service])
+                    current_ports.append(port)
+                
+                anomaly = 0
+
+            data.append([ipv4, ip_id, global_scan_id, current_ports, current_services.tolist(), anomaly])
+            global_scan_id += 1
+
+    return pd.DataFrame(data, columns=['ipv4', 'ip_id', 'scan_id', 'port', 'service', 'anomaly'])
 def extract_typical_ports(service_port_dict):
     """
     Extracts the most common port for each service from a nested defaultdict structure.
@@ -138,7 +234,7 @@ def extract_typical_ports(service_port_dict):
         typical_ports[service] = int(typical_port)  # Ensure the port is an integer
     return typical_ports
 
-def generate_scan_data_with_variance(num_ips, num_scans_per_ip, typical_service_port_map, anomaly_rate=0.1, anomalous_scan_prob=0.2, seed=None):
+def generate_scan_data_3(num_ips, num_scans_per_ip, typical_service_port_map, anomaly_rate=0.1, anomalous_scan_prob=0.2, seed=None):
     """
     Generates synthetic scan data with specific anomalies: services running on atypical ports.
 
@@ -152,6 +248,7 @@ def generate_scan_data_with_variance(num_ips, num_scans_per_ip, typical_service_
     Returns:
     - pd.DataFrame: Data with columns 'ipv4', 'ip_id', 'scan_id', 'port', 'service', 'anomaly'.
     """
+    #print('generate_scan_data_3().')
     np.random.seed(seed)
     random.seed(seed)
     
@@ -162,14 +259,18 @@ def generate_scan_data_with_variance(num_ips, num_scans_per_ip, typical_service_
     global_scan_id = 0
     services = list(typical_service_port_map.keys())
 
+    # choose ips to become df[df['anomaly']==1].head()
+    num_anomolous_ips = max(1, int(num_ips * anomaly_rate))
+    anom_ip_id = random.sample(range(num_ips), num_anomolous_ips)
+
     for ip_id in range(num_ips):
         ipv4 = generate_ipv4()
-        is_anomalous_ip = np.random.rand() < anomaly_rate  # Determine if this IP is anomalous
+        is_anomalous_ip = (ip_id in anom_ip_id) # Determine if this IP is anomalous
         '''if ip_id == 0:
             is_anomalous_ip = True'''
         #print('is_anomalous_ip', is_anomalous_ip)
-        if is_anomalous_ip:
-            print('Anomalous ip:', ipv4)
+        #if is_anomalous_ip:
+            #print('Anomalous ip:', ipv4)
 
         # For each IP, create a base set of typical services and ports
         #base_services = random.sample(services, k=random.randint(3, len(services)))
@@ -179,17 +280,18 @@ def generate_scan_data_with_variance(num_ips, num_scans_per_ip, typical_service_
         scan_ports = [typical_service_port_map[service] for service in scan_services]
 
         for scan_id in range(num_scans_per_ip):
+            scan_ports_modified = scan_ports.copy()
             if is_anomalous_ip and scan_id >= int(num_scans_per_ip * (1-anomalous_scan_prob)):  # anomalous_scan_prob anomalous scans for anomalous IPs
                 # Choose two unique random indices to swap ports
                 idx1, idx2 = random.sample(range(len(scan_ports)), 2)
                 # Swap the ports at the chosen indices
-                scan_ports[idx1], scan_ports[idx2] = scan_ports[idx2], scan_ports[idx1]
+                scan_ports_modified[idx1], scan_ports_modified[idx2] = scan_ports_modified[idx2], scan_ports_modified[idx1]
                 anomaly_flag = 1  # Label this scan as anomalous
             else:
                 anomaly_flag = 0
 
             # Append each scan for this IP
-            data.append([ipv4, ip_id, global_scan_id, scan_ports, scan_services, anomaly_flag])
+            data.append([ipv4, ip_id, global_scan_id, scan_ports_modified, scan_services, anomaly_flag])
             global_scan_id += 1
 
     # Convert to DataFrame
@@ -377,7 +479,7 @@ def summarize_features(df):
     results = []
     
     # Iterate through each IP address
-    for ip, group in df.groupby("ipv4"):
+    for ip, group in df.groupby("ip_id"):
         # Flatten the list of ports and services for this IP
         ip_ports = [port for ports in group['port'] for port in ports]
         ip_services = [service for services in group['service'] for service in services]
@@ -387,7 +489,7 @@ def summarize_features(df):
         service_counts = Counter(ip_services)
         
         # Prepare the result row with counts for each unique port and service
-        result = {"ipv4": ip}
+        result = {"ip_id": ip}
         
         # Populate counts for each port, defaulting to 0 if the port is absent
         for port in all_ports:
@@ -399,35 +501,33 @@ def summarize_features(df):
         results.append(result)
     
     # Convert results to a DataFrame
-    return pd.DataFrame(results)
-
-def summarize_features_old(df):
-    df_flat = df.explode('port').explode('service')
-
-    # Group by 'ipv4' and count occurrences of each port and service
-    freq_port = df_flat.groupby(['ipv4', 'port']).size().unstack(fill_value=0)
-    freq_service = df_flat.groupby(['ipv4', 'service']).size().unstack(fill_value=0)
-
-    # Combine frequencies into a single dataframe
-    df_features = pd.concat([freq_port, freq_service], axis=1).reset_index()
-    df_features.columns.name = None  # Remove column name for aesthetics
-    df_features.columns = df_features.columns.astype(str)
-
-    return df_features         
+    return pd.DataFrame(results)       
 
 def pairs(df):
+    # Flatten the services into unique integer identifiers
+    unique_services = pd.Series([service for sublist in df['service'] for service in sublist]).unique()
+    service_to_id = {service: idx for idx, service in enumerate(unique_services)}
 
+    # Function to transform each row
     transformed_data = []
-
     for index, row in df.iterrows():
-        ipv4 = row['ipv4']
-        ports = row['port']
+        ip_id = row['ip_id']  # Use 'ip_id' instead of 'ipv4'
+        ports = row['port']  # List of ports
+        services = row['service']  # List of services
         
-        for port in ports:
-            transformed_row = {'ipv4': ipv4, 'port': port}
+        # Ensure ports and services are paired correctly
+        if len(ports) != len(services):
+            raise ValueError(f"Mismatched lengths for ports and services in row {index}")
+
+        for port, service in zip(ports, services):
+            transformed_row = {
+                'ip_id': ip_id,  # Include 'ip_id' in each transformed row
+                'port': port,
+                'service_id': service_to_id[service]  # Map service to unique ID
+            }
             transformed_data.append(transformed_row)
 
-    # Now transformed_data contains the desired format
+    # Convert transformed data to a DataFrame
     transformed_df = pd.DataFrame(transformed_data)
 
     return transformed_df
